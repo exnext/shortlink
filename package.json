@@ -1,0 +1,24 @@
+{
+  "name": "shortlink",
+  "version": "1.0.0",
+  "description": "",
+  "main": "shortlink.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exnext/shortlink.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/exnext/shortlink/issues"
+  },
+  "homepage": "https://github.com/exnext/shortlink#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "sqlite3": "^4.1.1"
+  }
+}
