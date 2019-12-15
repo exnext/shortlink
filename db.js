@@ -18,7 +18,7 @@ const INSERT = `INSERT INTO shortlink VALUES ($tag, $url, $name, $description, $
 const SELECT = `SELECT * FROM shortlink WHERE tag=$tag LIMIT 1`;
 const SELECT_ALL = `SELECT * FROM shortlink`;
 
-fs.closeSync(fs.openSync(FILE, 'w'));
+fs.closeSync(fs.openSync(FILE, 'a'));
 
 let db;
 
@@ -63,30 +63,32 @@ function insert(data) {
 function getUrl(tag) {
     return new Promise((resolve, reject) => {
         try {
-            let params = {
-                $tag: tag
-            }
-
-            let stmt = db.prepare(SELECT, params, (error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    let url = undefined;
-
-                    stmt.each((error, row) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            url = row.url;
-                        }
-                    }).finalize(() => {
-                        if (url) {
-                            resolve(url);
-                        } else {
-                            reject('tag is not supported');
-                        }
-                    });
+            db.serialize(() => {
+                let params = {
+                    $tag: tag
                 }
+    
+                let stmt = db.prepare(SELECT, params, (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        let url = undefined;
+    
+                        stmt.each((error, row) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                url = row;
+                            }
+                        }).finalize(() => {
+                            if (url) {
+                                resolve(url);
+                            } else {
+                                reject('tag is not supported');
+                            }
+                        });
+                    }
+                });
             });
         } catch (error) {
             reject(error);
@@ -127,12 +129,3 @@ module.exports = {
     getUrlsList,
     existTag
 }
-
-
-// module.exports = {
-//     FILE,
-//     CREATE_TABLE,
-//     INSERT,
-//     SELECT,
-//     SELECT_ALL
-// };
