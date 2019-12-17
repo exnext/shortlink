@@ -1,24 +1,12 @@
 'use strict';
 
 const express = require('express');
-// const db = require('./db');
-
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.static(__dirname + '/'));
 
-// var NoSQL = require('nosql');
-// var db2 = NoSQL.load('./database.nosql', ['linki']);
-// db2.find().make(function(filter) {
-//     filter.where('age', '>', 20);
-//     filter.where('removed', false);
-//     filter.callback(function(err, response) {
-//         console.log(err, response);
-//     });
-// });
-//https://github.com/sequelize/sequelize/
-//https://github.com/totaljs/node-sqlagent
 
 const { Sequelize, Model, DataTypes } = require('sequelize');
 const sequelize = new Sequelize('sqlite:./shortlink.db');
@@ -33,28 +21,22 @@ Link.init({
   added: DataTypes.DATE
 }, { sequelize, modelName: 'link' });
 
+
 app.get('/', (req, res) => {
     console.log(req.client);
     if (req.query.list) {
-        // db.getUrlsList()
-        //     .then((result) => {
-        //         res.send(result);
-        //     })
-        //     .catch((error) => {
-        //         res.send(error);
-        //     });
-        res.send();
+        Link.findAll()
+        .then((links) => {
+            res.send(links);
+        });
     } else if (req.query.url) {
         let data = buildData(req.query);
 
-        res.send();
-        // db.insert(data)
-        //     .then((result) => {
-        //         res.send('added ' + result.$tag);
-        //     })
-        //     .catch((error) => {
-        //         res.send(error);
-        //     });
+        sequelize.sync()
+        .then(() => Link.create(data))
+        .then(link => {
+            res.send(link.toJSON());
+        });
     } else {
         res.redirect('/add');
     }
@@ -64,42 +46,22 @@ app.post('/', (req, res) => {
     let data = buildData(req.body);
 
     sequelize.sync()
-    .then(() => Link.create({
-        tag: data.tag || generateTag(data),
-        url: data.url,
-        name: data.name,
-        description: data.description,
-        expire: data.expire,
-        added: new Date()
-    }))
+    .then(() => Link.create(data))
     .then(link => {
-        res.send(link.toJSON());
-    });    
-
-    // db.insert(data)
-    //     .then((result) => {
-    //         res.send('added ' + result.$tag);
-    //     })
-    //     .catch((error) => {
-    //         res.send(error);
-    //     });
+        res.send(link);
+    });
 });
 
 app.get('/:tag', (req, res) => {
-    // db.getUrl(req.params.tag)
-    //     .then((result) => {
-    //         console.log(result);
-    //         if (!!req.query.view) {
-    //             res.send(result);
-    //         } else {
-    //             res.redirect(result.url);
-    //         }
-    //     })
-    //     .catch((error) => {
-    //         console.log(error);
-    //         res.send(error);
-    //     });
-    res.send();
+    Link.findAll({ where: { tag: req.params.tag } })
+    .then((link) => {
+        if (req.query.view) {
+            res.send(link[0]);
+        } else {
+            // res.redirect(link.url);
+            res.send(link[0].url);
+        }
+    });
 });
 
 function generateTag(params, attempts = 10) {
@@ -127,21 +89,14 @@ function generateTag(params, attempts = 10) {
 
 function buildData(data) {
     return {
-        $tag: generateTag(data),
-        $url: data.url,
-        $name: data.name,
-        $description: data.description,
-        $expire: data.expire,
-        $added: new Date()
+        tag: generateTag(data),
+        url: data.url,
+        name: data.name,
+        description: data.description,
+        expire: data.expire,
+        added: new Date()
     }
 }
-
-// db.init().then(() => {
-//     const PORT = 8080;
-//     const HOST = '0.0.0.0';
-//     app.listen(PORT, HOST);
-//     console.log(`Running on http://${HOST}:${PORT}`);
-// });
 
 const PORT = 8080;
 const HOST = '0.0.0.0';
