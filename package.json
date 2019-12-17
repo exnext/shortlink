@@ -19,6 +19,8 @@
   "homepage": "https://github.com/exnext/shortlink#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "nosql": "^6.1.0",
+    "sequelize": "^5.21.3",
     "sqlite3": "^4.1.1"
   }
 }
