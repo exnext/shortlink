@@ -1,26 +1,49 @@
 'use strict';
 
+const url = require('url');
+const fs = require('fs');
 const express = require('express');
-const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(express.static(__dirname + '/'));
-
-
 const { Sequelize, Model, DataTypes } = require('sequelize');
-const sequelize = new Sequelize('sqlite:./shortlink.db');
+const Recaptcha = require('recaptcha-verify');
+
+const config = {
+    port: 8080,
+    address: 'localhost'
+};
+
+
+if (fs.existsSync('./config.json')) {
+    const configFile = fs.readFileSync('./config.json');
+    Object.assign(config, JSON.parse(configFile));
+}
+
+
+let recaptcha;
+if (config.recaptcha && config.recaptcha.secretKey) {
+    recaptcha = new Recaptcha({
+        secret: config.recaptcha.secretKey,
+        verbose: true
+    });
+}
+
+
+const sequelize = new Sequelize('sqlite::memory:');
+// const sequelize = new Sequelize('sqlite:./shortlink.db');
 
 class Link extends Model {}
 Link.init({
   tag: DataTypes.STRING,
-  url: DataTypes.STRING,
-  name: DataTypes.STRING,
-  description: DataTypes.STRING,
-  expire: DataTypes.DATE,
-  added: DataTypes.DATE
+  url: DataTypes.STRING
 }, { sequelize, modelName: 'link' });
 
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded());
+app.get(/^\/(shortlink|config.json).*$/, (req, res) => {
+    res.send('funny :)');
+});
+app.use(express.static(__dirname + '/'));
 
 app.get('/', (req, res) => {
     console.log(req.client);
@@ -43,62 +66,95 @@ app.get('/', (req, res) => {
 });
 
 app.post('/', (req, res) => {
+    function insert() {
+        sequelize.sync()
+        .then(() => Link.create(data))
+        .then(link => {
+            res.send(link);
+        });
+    }
+
     let data = buildData(req.body);
 
-    sequelize.sync()
-    .then(() => Link.create(data))
-    .then(link => {
-        res.send(link);
-    });
+    if (recaptcha && req.body.recaptchaToken) {
+        recaptcha.checkResponse(req.body.recaptchaToken, function(error, response){
+            if(error){
+                res.status(400).render('400', {
+                    message: error.toString()
+                });
+                return;
+            }
+
+            if(response.success){
+                insert();
+            }else{
+                res.status(401).render('401', {
+                    message: 'Client is not a human'
+                });
+            }
+        });
+    } else {
+        insert();
+    }
 });
 
+app.get('/config', (req, res) => {
+    res.send({
+        recaptcha: {
+            siteKey: config.recaptcha && config.recaptcha.siteKey
+        }
+    });
+})
+
 app.get('/:tag', (req, res) => {
-    Link.findAll({ where: { tag: req.params.tag } })
+    Link.findOne({ where: { tag: req.params.tag } })
     .then((link) => {
         if (req.query.view) {
-            res.send(link[0]);
+            res.send(link);
         } else {
-            // res.redirect(link.url);
-            res.send(link[0].url);
+            let u = url.parse(link.url);
+
+            let address = u.protocol
+                ? link.url
+                : '//' + link.url;
+
+            res.redirect(address);
         }
     });
 });
 
-function generateTag(params, attempts = 10) {
-    let allowUserTag = params.tag/* && your autythication conditions*/;
-    let tag;
+function generateTag(attempts = 10) {
+    let tag = Math.random().toString(36).substring(2, 15);
 
-    if (allowUserTag) {
-        tag = params.tag;
+    if (existTag(tag)) {
+        if (attempts) {
+            tag = generateTag(attempts--);
+        } else {
+            throw 'Internal error, please try again';
+        }
     }
-
-    tag = tag || Math.random().toString(36).substring(2, 15);
-
-    // if (db.existTag(tag)) {
-    //     if (allowUserTag) {
-    //         throw 'the tag is used';
-    //     } else if (attempts) {
-    //         tag = generateTag(params, attempts--);
-    //     } else {
-    //         throw 'internal error, please try again';
-    //     }
-    // }
 
     return tag;
 }
 
+function existTag(tag) {
+    let result = false;
+    
+    Link.findOne({ where: { tag } })
+    .then((link) => {
+        result = true;
+    });
+
+    return result;
+}
+
 function buildData(data) {
     return {
-        tag: generateTag(data),
-        url: data.url,
-        name: data.name,
-        description: data.description,
-        expire: data.expire,
-        added: new Date()
+        tag: generateTag(),
+        url: data.url
     }
 }
 
-const PORT = 8080;
-const HOST = '0.0.0.0';
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
+let address = config.address || 'localhost';
+app.listen(config.port, address);
+console.log(`Running on http://${address}:${config.port}`);

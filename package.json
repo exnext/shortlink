@@ -1,7 +1,7 @@
 {
-  "name": "shortlink",
+  "name": "ShortLink",
   "version": "1.0.0",
-  "description": "",
+  "description": "Service to create short links",
   "main": "shortlink.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,16 +10,22 @@
     "type": "git",
     "url": "git+https://github.com/exnext/shortlink.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "short",
+    "cut",
+    "tiny",
+    "link",
+    "url"
+  ],
+  "author": "exnext.pl",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/exnext/shortlink/issues"
   },
   "homepage": "https://github.com/exnext/shortlink#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "nosql": "^6.1.0",
+    "recaptcha-verify": "^0.1.1",
     "sequelize": "^5.21.3",
     "sqlite3": "^4.1.1"
   }
