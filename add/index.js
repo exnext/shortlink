@@ -1,5 +1,13 @@
-var app = new Vue({
+Vue.use(VSwitch);
+
+const router = new VueRouter({
+    hashbang: false,
+    mode: 'history'
+});
+
+const app = new Vue({
     el: '#app',
+    router: router,
     data: () => {
         let config = {};
 
@@ -18,6 +26,11 @@ var app = new Vue({
     },
     components: {
         'vue-recaptcha': VueRecaptcha
+    },
+    computed: {
+        status() {
+            return this.$route.query.status;
+        }
     },
     methods: {
         createUrl(recaptchaToken) {

@@ -1,10 +1,10 @@
 {
-  "name": "ShortLink",
+  "name": "shortlink",
   "version": "1.0.0",
   "description": "Service to create short links",
   "main": "shortlink.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node shortlink.js"
   },
   "repository": {
     "type": "git",
