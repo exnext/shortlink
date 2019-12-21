@@ -98,14 +98,7 @@ const app = (() => {
 
 
 app.get('/', (req, res) => {
-    if (req.query.list) {
-        Link.findAll()
-            .then((links) => {
-                res.send(links);
-            });
-    } else {
-        res.redirect('/add');
-    }
+    res.redirect('/add');
 });
 
 app.post('/', (req, res) => {
