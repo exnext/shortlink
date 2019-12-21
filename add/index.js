@@ -1,5 +1,9 @@
 Vue.use(VSwitch);
 
+Vue.component('logo', {
+	template: '#logo-template'
+});
+
 const router = new VueRouter({
     hashbang: false,
     mode: 'history'

@@ -25,11 +25,39 @@ const config = (() => {
 const recaptcha = (() => {
     if (config.recaptcha && config.recaptcha.secretKey) {
         const Recaptcha = require('recaptcha-verify');
-
-        return new Recaptcha({
+        
+        const rv = new Recaptcha({
             secret: config.recaptcha.secretKey,
             verbose: true
         });
+
+        function check(token) {
+            return new Promise((resolve, reject) => {
+                rv.checkResponse(token, function (error, response) {
+                    if (error) {
+                        reject({
+                            status: 400,
+                            message: error.toString()
+                        });
+
+                        return;
+                    }
+        
+                    if (response.success) {
+                        resolve();
+                    } else {
+                        reject({
+                            status: 401,
+                            message: 'Client is not a human'
+                        });
+                    }
+                });
+            });
+        }
+
+        return {
+            check
+        }
     } else {
         return null;
     }
@@ -75,14 +103,6 @@ app.get('/', (req, res) => {
             .then((links) => {
                 res.send(links);
             });
-    } else if (req.query.url) {
-        let data = buildData(req.query);
-
-        sequelize.sync()
-            .then(() => Link.create(data))
-            .then(link => {
-                res.send(link.toJSON());
-            });
     } else {
         res.redirect('/add');
     }
@@ -90,7 +110,10 @@ app.get('/', (req, res) => {
 
 app.post('/', (req, res) => {
     function insert() {
-        let data = buildData(req.body);
+        let data = {
+            tag: generateTag(),
+            url: req.body.url
+        };
         
         sequelize.sync()
             .then(() => Link.create(data))
@@ -100,22 +123,15 @@ app.post('/', (req, res) => {
     }
 
     if (recaptcha && req.body.recaptchaToken) {
-        recaptcha.checkResponse(req.body.recaptchaToken, function (error, response) {
-            if (error) {
-                res.status(400).render('400', {
-                    message: error.toString()
-                });
-                return;
-            }
-
-            if (response.success) {
+        recaptcha.check(req.body.recaptchaToken)
+            .then(() => {
                 insert();
-            } else {
-                res.status(401).render('401', {
-                    message: 'Client is not a human'
+            })
+            .catch((error) => {
+                res.status(error.status).render(error.status.toString(), {
+                    message: error.message
                 });
-            }
-        });
+            });
     } else {
         insert();
     }
@@ -174,13 +190,6 @@ function existTag(tag) {
         });
 
     return result;
-}
-
-function buildData(data) {
-    return {
-        tag: generateTag(),
-        url: data.url
-    }
 }
 
 app.listen(config.port, config.address);
