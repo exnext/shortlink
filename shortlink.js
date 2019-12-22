@@ -28,7 +28,7 @@ const recaptcha = (() => {
         
         const rv = new Recaptcha({
             secret: config.recaptcha.secretKey,
-            verbose: true
+            verbose: false
         });
 
         function check(token) {
@@ -66,7 +66,9 @@ const recaptcha = (() => {
 
 const { sequelize, Link, Op } = (() => {
     const { Sequelize, Model, DataTypes } = require('sequelize');
-    const sequelize = new Sequelize('sqlite:' + config.database);
+    const sequelize = new Sequelize('sqlite:' + config.database, {
+        logging: false
+    });
 
     class Link extends Model { }
 
