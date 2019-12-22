@@ -25,6 +25,7 @@ const app = new Vue({
             link: undefined,
             showRecaptcha: false,
             working: false,
+            errorMsg: undefined,
             config
         }
     },
@@ -45,7 +46,8 @@ const app = new Vue({
                     this.link = window.location.origin + '/' + result.data.tag;
                 })
                 .catch((error) => {
-                    console.log(error);
+                    this.errorMsg = error.response.data;
+                    this.$router.push('/add?status=' + error.response.status);
                 })
                 .finally(() => {
                     this.working = false;    
@@ -61,6 +63,8 @@ const app = new Vue({
         newAddress() {
             this.link = undefined;
             this.showRecaptcha = false;
+            this.errorMsg = undefined;
+            this.$router.push('/add');
         },
         onCaptchaVerified(recaptchaToken) {
             this.$refs.recaptcha.reset();

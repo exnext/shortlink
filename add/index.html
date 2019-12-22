@@ -20,6 +20,11 @@
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
   <style>
+    #app {
+      width: 600px;
+      max-width: 90%;
+    }
+    
     .logo {
       --color: #f6c200ff;
       display: flex;
@@ -41,11 +46,15 @@
     .display-4.mb-4 {
       font-size: 1.6rem;
     }
+
+    .status > div {
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 
 <body class="d-flex justify-content-center text-center">
-  <div id="app" style="min-width: 600px;">
+  <div id="app">
     <logo></logo>
 
     <div v-if="!link && !status">
@@ -76,7 +85,9 @@
       <div v-switch="status">
         <span class="display-4" v-case="'401'">Unauthorized</span>
         <span class="display-4" v-case="'404'">Not Found</span>
+        <span class="display-4" v-default>{{errorMsg}}</span>
       </div>
+      <button class="btn btn-primary" v-on:click="newAddress">New address</button>
     </div>
   </div>
 

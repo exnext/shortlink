@@ -64,7 +64,7 @@ const recaptcha = (() => {
 })();
 
 
-const { sequelize, Link } = (() => {
+const { sequelize, Link, Op } = (() => {
     const { Sequelize, Model, DataTypes } = require('sequelize');
     const sequelize = new Sequelize('sqlite:' + config.database);
 
@@ -75,7 +75,9 @@ const { sequelize, Link } = (() => {
         url: DataTypes.STRING
     }, { sequelize, modelName: 'link' });
 
-    return { sequelize, Link }
+    sequelize.sync();
+
+    return { sequelize, Link, Op: Sequelize.Op }
 })();
 
 
@@ -121,9 +123,7 @@ app.post('/', (req, res) => {
                 insert();
             })
             .catch((error) => {
-                res.status(error.status).render(error.status.toString(), {
-                    message: error.message
-                });
+                res.status(error.status).send(error.message);
             });
     } else {
         insert();
@@ -138,8 +138,11 @@ app.get('/config', (req, res) => {
     });
 })
 
-app.get('/:tag', (req, res) => {
-    Link.findOne({ where: { tag: req.params.tag } })
+app.get('/:tag', (req, res, next) => {
+    if (/^(add|favicon.ico).*$/.test(req.params.tag)) {
+        next();
+    } else {
+        Link.findOne({ where: { tag: req.params.tag } })
         .then((link) => {
             if (link) {
                 if (req.query.view) {
@@ -158,6 +161,7 @@ app.get('/:tag', (req, res) => {
                 res.redirect(address);
             }
         });
+    }
 });
 
 function generateTag(attempts = 10) {
