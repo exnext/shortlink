@@ -16,8 +16,7 @@ const config = (() => {
     return Object.assign({
         port: 8080,
         address: 'localhost',
-        database: './shortlink.db',
-
+        database: './shortlink.db'
     }, fileJSON);
 })();
 
