@@ -17,7 +17,7 @@ node shortlink.js
 
 ## User inrerface
 
-You can build own web page to use the shortlink service or can use added example. Our example has based on VUE framework. Change our logo for your and have fun from full functionality service.
+You can build yours own web page to use the shortlink service or can use added example. Our example has based on VUE framework. Change our logo for yours and have fun full functionality service.
 
 On web browser set url address served by the shortlink (e.g http://localhost:8080). Shortlink service should redirect you to path **/add**.
 
@@ -43,7 +43,7 @@ Default values are defined in shortlink.js. Each value can be overridden by conf
 
 ## Custom configuration
 
-You can override part or all default values (e.g change port or database). You must create file config.json contains overrides values.
+You can override part or all default values (e.g change port or database). You have to create file config.json contains overrides values.
 
 ```json
 {
@@ -62,7 +62,7 @@ You can override part or all default values (e.g change port or database). You m
 
 ## reCAPTCHA v2
 
-The service supports reCAPTCHA. You must set fields into config.json to enable feature. The solution has used [recaptcha-verify](https://www.npmjs.com/package/recaptcha-verify) module.
+The service supports reCAPTCHA. You have to set fields into config.json to enable feature. The solution has used [recaptcha-verify](https://www.npmjs.com/package/recaptcha-verify) module.
 
 ```json
 {
