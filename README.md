@@ -81,7 +81,7 @@ Below are examples to configurations for apache and linux service
 
 ```apache
 <VirtualHost *:80>
-    ServerName shortlink.YOUR-DOMAIN.pl
+    ServerName YOUR-DOMAIN
     ProxyPass / http://localhost:8080/
     ProxyPassReverse / http://localhost:8080/
     ProxyPreserveHost On
@@ -91,7 +91,7 @@ Below are examples to configurations for apache and linux service
 
 ### Service
 
-Save configuration from below example to /lib/systemd/system/shortlink.service...
+Save configuration from below example to /lib/systemd/system/shortlink.service. Change YOUR-PATH before...
 
 ```ini
 [Unit]
@@ -100,8 +100,8 @@ After=network-online.target
 
 [Service]
 Restart=on-failure
-WorkingDirectory=/ANY-PATH/shortlink/
-ExecStart=/usr/bin/node /ANY-PATH/shortlink/shortlink.js
+WorkingDirectory=/YOUR-PATH/shortlink/
+ExecStart=/usr/bin/node /YOUR-PATH/shortlink/shortlink.js
 
 [Install]
 WantedBy=multi-user.target
