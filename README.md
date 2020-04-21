@@ -89,13 +89,26 @@ Below are examples to configurations for apache and linux service
 </VirtualHost>
 ```
 
+### Nginx
+
+```nginx
+server {
+   listen 80;
+   server_name YOUR-DOMAIN;
+
+   location / {
+      proxy_pass http://localhost:8080/;
+   }
+} 
+```
+
 ### Service
 
 Save configuration from below example to /lib/systemd/system/shortlink.service. Change YOUR-PATH before...
 
 ```ini
 [Unit]
-Description=LTPS NodeJS Test Application
+Description=shortlink service
 After=network-online.target
 
 [Service]
